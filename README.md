@@ -16,6 +16,7 @@ Open `product.html` in a browser for the one-page overview.
 
 ## Requirements
 
+- **Platforms:** macOS and Linux natively, and Windows via WSL2 (Ubuntu). Claude Code itself also runs natively on Windows (PowerShell installer), but Conductor's tmux terminal mode requires tmux, which is not available natively on Windows — use WSL2 for full multi-session support.
 - Claude Code with plugin support (the `claude plugin` command).
 - Node.js 18 or later (tested on Node 26) and git 2.20 or later on `PATH`.
 - A git repository with a remote and a deploy branch (default `main`).
@@ -31,10 +32,10 @@ Open `product.html` in a browser for the one-page overview.
 
 ## Install
 
-Unzip `conductor-kit-1.1.0.zip` anywhere you keep tools, for example `~/tools/conductor-kit`. Then:
+From the public marketplace (recommended):
 
 ```bash
-claude plugin marketplace add ~/tools/conductor-kit
+claude plugin marketplace add seattle78/AgentQuest
 ```
 
 ```bash
@@ -47,8 +48,15 @@ Optional, the board pane:
 claude plugin install conductor-board@conductor-kit
 ```
 
-Use the absolute path of the folder you unzipped (the one that contains `.claude-plugin/` and
-`plugins/`). Restart Claude Code, or start a new session, so the plugins load.
+If you already have a local install, uninstall it first — see
+Troubleshooting, "Marketplace add fails" and "already installed".
+
+Local install (from a zip, for development only): unzip
+`conductor-kit-1.1.0.zip` anywhere you keep tools, then
+`claude plugin marketplace add ~/tools/conductor-kit` (use the absolute
+path of the folder you unzipped, the one that contains `.claude-plugin/`
+and `plugins/`), then install as above. Restart Claude Code, or start a
+new session, so the plugins load.
 
 ## First run (once per repository)
 
@@ -204,6 +212,42 @@ your projects. The tmux tests use a private tmux server that they shut down at t
 - The away-mode hourly check uses `/loop` and runs only while the conductor window is open.
 - Deploy pipelines are not assumed. If pushing the deploy branch starts one, set
   `pipeline_wait_command` and confirm the deploy yourself before `finalize`.
+
+## Troubleshooting
+
+- **Marketplace add fails: "its source doesn't match its extraKnownMarketplaces entry"**
+  A local install is already registered. Uninstall the plugin first, then add the
+  public marketplace:
+  ```bash
+  claude plugin uninstall conductor-kit@conductor-kit
+  claude plugin marketplace add seattle78/AgentQuest
+  claude plugin install conductor-kit@conductor-kit
+  ```
+  Check `~/.claude/settings.json`: `extraKnownMarketplaces["conductor-kit"]` should
+  point to GitHub `seattle78/AgentQuest`. If the error persists, back up that file,
+  delete the `conductor-kit` entry from `extraKnownMarketplaces`, and add it again.
+  Changing folders does not fix this — marketplace registration is per user, not
+  per folder.
+- **Plugin "already installed" and loads from a local folder**
+  That is the local install, not the public one. Uninstall it first (above), then
+  install from `seattle78/AgentQuest` and confirm with `claude plugin list`.
+- **Setup fails: "Not inside a git repository"**
+  Setup needs a git repository with a remote and a deploy branch. In an empty
+  folder, run `git init`, make a first commit, add a remote, push `main`, then run
+  `/conductor-kit:setup` again.
+- **Claude Code login fails**
+  Confirm which login you chose: a Claude subscription account, or Anthropic
+  Console (API billing). A Google sign-in must match the account that holds the
+  subscription. Re-run `/login` for a fresh authorization.
+- **Git push asks for a password and fails**
+  GitHub passwords do not work for git push. Create a Personal Access Token with
+  the `repo` scope (GitHub → Settings → Developer settings → Personal access
+  tokens → Tokens (classic)), then use your username and the token as the
+  password. Tokens are shown only once — save it immediately and never share it.
+- **Windows: tmux mode does not work natively**
+  Claude Code runs natively on Windows, but Conductor's tmux mode needs tmux.
+  Use WSL2 (Ubuntu) for full multi-session support: `wsl --install`, then install
+  Node, git, tmux, and Claude Code inside the Ubuntu terminal.
 
 ## Uninstall
 
