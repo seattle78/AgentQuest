@@ -1,0 +1,19 @@
+{
+  "name": "conductor-kit",
+  "description": "Local marketplace for the Conductor kit: the orchestration plugin and its optional status board pane.",
+  "owner": { "name": "Conductor Kit maintainers" },
+  "plugins": [
+    {
+      "name": "conductor-kit",
+      "source": "./plugins/conductor-kit",
+      "description": "Conductor, work sessions, release manager: gated lifecycle in isolated worktrees with an approved non-force release push.",
+      "version": "1.1.0"
+    },
+    {
+      "name": "conductor-board",
+      "source": "./plugins/conductor-board",
+      "description": "Optional live status board pane (/board) for the conductor window.",
+      "version": "1.1.0"
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conductor Kit</title>
+<style>
+  :root {
+    --bg: #f7f6f2; --surface: #ffffff; --ink: #1c1d21; --muted: #5d606b; --line: #e2e0d8;
+    --accent: #2f5bd3; --accent-soft: #e8eefc; --good: #1f7a4d; --good-soft: #e5f4ec;
+    --warn: #9a5a00; --warn-soft: #fbf0dc; --code: #f0efe9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141518; --surface: #1c1d22; --ink: #ececef; --muted: #a2a5b0; --line: #2e3038;
+      --accent: #8aa8ff; --accent-soft: #232b44; --good: #6fd09d; --good-soft: #1b2e24;
+      --warn: #f0b860; --warn-soft: #33281a; --code: #24252b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141518; --surface: #1c1d22; --ink: #ececef; --muted: #a2a5b0; --line: #2e3038;
+    --accent: #8aa8ff; --accent-soft: #232b44; --good: #6fd09d; --good-soft: #1b2e24;
+    --warn: #f0b860; --warn-soft: #33281a; --code: #24252b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 920px; margin: 0 auto; padding: 48px 16px 72px; }
+  h1 { font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.02em; }
+  h2 { font-size: 1.3rem; margin: 56px 0 14px; letter-spacing: -0.01em; }
+  h3 { font-size: 1rem; margin: 0 0 6px; }
+  p { margin: 0 0 12px; }
+  .eyebrow { color: var(--accent); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .lede { font-size: 1.15rem; color: var(--muted); max-width: 680px; }
+  .muted { color: var(--muted); }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88em; }
+  code { background: var(--code); padding: 1px 6px; border-radius: 5px; }
+  pre { background: var(--code); padding: 14px 16px; border-radius: 10px; overflow-x: auto; margin: 0 0 12px; }
+  pre code { background: none; padding: 0; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .card p { color: var(--muted); margin: 0; font-size: 0.95rem; }
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 4px; }
+  .step { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: 0.9rem; white-space: nowrap; }
+  .step.you { background: var(--warn-soft); border-color: transparent; color: var(--warn); font-weight: 600; }
+  .step.ship { background: var(--good-soft); border-color: transparent; color: var(--good); font-weight: 600; }
+  .arrow { color: var(--muted); }
+  .lane { margin-top: 18px; }
+  .lane-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 6px; }
+  ul.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  ul.checks li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 12px 42px; position: relative; }
+  ul.checks li::before { content: "✓"; position: absolute; left: 14px; top: 11px; color: var(--good); font-weight: 700; }
+  ol.install { padding-left: 22px; margin: 0; }
+  ol.install li { margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+  footer { margin-top: 64px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 18px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Conductor Kit · 1.1.0 · Claude Code plugin</div>
+  <h1>One window to talk to. Many sessions doing the work.</h1>
+  <p class="lede">You talk to a conductor. It hands each change to its own work session in an
+  isolated git worktree, keeps a board of what is running and what waits on you, and lets one
+  release manager ship only the exact commit you approved.</p>
+
+  <h2>The problem it solves</h2>
+  <div class="grid">
+    <div class="card"><h3>Parallel chats collide</h3><p>Two sessions edit the same file, or one switches the branch under the other. Here every task gets its own worktree, and overlapping files queue instead of racing.</p></div>
+    <div class="card"><h3>"Done" without proof</h3><p>A chat says tests pass. Here gates are recorded only with agent-run evidence, and the release manager re-runs the checks itself.</p></div>
+    <div class="card"><h3>Ship what nobody approved</h3><p>Here the push takes one literal SHA that must match the verified integration commit, never forced, never a branch name.</p></div>
+    <div class="card"><h3>Lost context</h3><p>Long sessions compact and forget. A context hook writes a handoff before that happens, and the next session resumes from it.</p></div>
+  </div>
+
+  <h2>How a change flows</h2>
+  <div class="lane">
+    <div class="lane-name">Conductor window</div>
+    <div class="flow"><span class="step you">You ask</span><span class="arrow">→</span><span class="step">classify</span><span class="arrow">→</span><span class="step">quick work here, or start a work session</span></div>
+  </div>
+  <div class="lane">
+    <div class="lane-name">Work session (own worktree)</div>
+    <div class="flow"><span class="step">analyze</span><span class="arrow">→</span><span class="step">plan review</span><span class="arrow">→</span><span class="step">failing tests</span><span class="arrow">→</span><span class="step">implement</span><span class="arrow">→</span><span class="step">review + test round (≤ 2)</span><span class="arrow">→</span><span class="step">commit &amp; integrate</span></div>
+  </div>
+  <div class="lane">
+    <div class="lane-name">Release manager (integration lane)</div>
+    <div class="flow"><span class="step">one version bump</span><span class="arrow">→</span><span class="step">checks pinned to one SHA</span><span class="arrow">→</span><span class="step you">You approve that SHA</span><span class="arrow">→</span><span class="step ship">non-force push</span><span class="arrow">→</span><span class="step">finalize</span></div>
+  </div>
+
+  <h2>What is inside</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Piece</th><th>What it does</th></tr>
+    <tr><td><code>/conductor-kit:setup</code></td><td>Creates <code>.conductor/</code>, detects your deploy branch and test command, asks once for the rest.</td></tr>
+    <tr><td><code>/conductor-kit:conductor</code></td><td>Your single window: routes requests, starts and steers sessions, keeps the board, brings you only approvals.</td></tr>
+    <tr><td><code>/conductor-kit:work-session</code></td><td>One change, end to end, in its own worktree.</td></tr>
+    <tr><td><code>/conductor-kit:release-manager</code></td><td>Audit, version bump, release notes, pinned verification, approved push, cleanup.</td></tr>
+    <tr><td><code>analyze</code> · <code>review-loop</code> · <code>handoff</code></td><td>Work Plans with owned files, a 2-round independent review, and resumable handoff documents.</td></tr>
+    <tr><td>Agents</td><td><code>reviewer</code> (read-only, top tier) and <code>tester</code>.</td></tr>
+    <tr><td>Hooks</td><td>Database write guard, context-threshold warning, handoff resume.</td></tr>
+    <tr><td><code>session-manager.js</code></td><td>Task registry, file ownership, build lock, integrate, combined check, release-ready, push-approved, finalize.</td></tr>
+    <tr><td><code>conductor-board</code> (optional)</td><td>A live <code>/board</code> pane, refreshed every 20 s with no model call. English or Korean labels.</td></tr>
+  </table>
+  </div>
+
+  <h2>Safety rules, on by default</h2>
+  <ul class="checks">
+    <li><strong>Only the approved SHA ships</strong>, non-force. If anything moves after you approve, you are asked again.</li>
+    <li><strong>Fail closed before the push:</strong> an optional pipeline-wait command must say "idle"; "cannot tell" blocks.</li>
+    <li><strong>Relayed approvals are refused for writes.</strong> You approve a database write or external call in the window that runs it.</li>
+    <li><strong>Every database write needs your approval</strong>, through a guard you can extend with your own patterns.</li>
+    <li><strong>No typing on your behalf.</strong> In tmux, messages to a session go through a file inbox; only a fixed "read your inbox" line is typed, and only while that session is idle at its prompt.</li>
+    <li><strong>Two review rounds at most.</strong> A serious finding left after round 2 comes to you instead of looping.</li>
+  </ul>
+
+  <h2>Install</h2>
+  <ol class="install">
+    <li>Unzip <code>conductor-kit-1.1.0.zip</code>, for example to <code>~/tools/conductor-kit</code>.</li>
+    <li>Add the marketplace and install:
+      <pre><code>claude plugin marketplace add ~/tools/conductor-kit
+claude plugin install conductor-kit@conductor-kit
+claude plugin install conductor-board@conductor-kit   # optional board pane</code></pre></li>
+    <li>In your repository, start Claude Code and run <code>/conductor-kit:setup</code>, then <code>/conductor-kit:conductor</code>. For terminal mode, start <code>tmux</code> first, then <code>claude</code> inside it.</li>
+  </ol>
+  <p class="muted">Needs Claude Code with plugin support, Node.js 18+ and git. Multiple sessions run in the Claude desktop app's Code tab, or in a terminal with tmux 3.x, where each work session opens as a tmux window (<code>Ctrl-b w</code> to switch). With neither, the conductor writes a brief for you to paste into a new terminal. Full details: <code>README.md</code>.</p>
+
+  <h2>Configure in one file</h2>
+  <p class="muted"><code>.conductor/config.json</code>, every field with a default:</p>
+  <pre><code>{
+  "deploy_branch": "main",
+  "integration_branch": "integration",
+  "test_command": "npm test",
+  "build_command": "",
+  "pipeline_wait_command": "",
+  "board_language": "en",
+  "user_name": "you"
+}</code></pre>
+
+  <footer>Conductor Kit 1.1.0. No license chosen yet; ask the person who gave you this kit before redistributing it.</footer>
+</main>
+</body>
+</html>

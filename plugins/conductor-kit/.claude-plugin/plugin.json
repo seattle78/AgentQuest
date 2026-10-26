@@ -1,0 +1,16 @@
+{
+  "name": "conductor-kit",
+  "version": "1.1.0",
+  "description": "Multi-session orchestration for Claude Code: a conductor window that routes work to isolated work sessions, a gated lifecycle per change (plan, review, red tests, implement, one combined review-and-test round, integrate), an integration lane with file ownership, a build lock, SHA-pinned combined verification and one approved non-force push, plus handoffs, a context-threshold hook and a database write guard.",
+  "author": {
+    "name": "SeungSup Shin"
+  },
+  "keywords": [
+    "orchestration",
+    "worktrees",
+    "release",
+    "review",
+    "handoff",
+    "multi-session"
+  ]
+}

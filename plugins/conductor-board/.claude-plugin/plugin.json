@@ -1,0 +1,7 @@
+{
+  "name": "conductor-board",
+  "version": "1.1.0",
+  "description": "Live status board pane for the conductor window (/board): what waits on you from .conductor/board/BOARD.json, and task progress read every 20 s from the conductor kit's session registry and workflow state, with no model call. Grouped as waiting on you, working, waiting on other work, released, queued. Read-only. English or Korean labels (board_language in .conductor/config.json). Needs the Claude desktop app or a terminal that renders plugin panes.",
+  "author": { "name": "Conductor Kit maintainers" },
+  "types": "./types/index.d.ts"
+}
