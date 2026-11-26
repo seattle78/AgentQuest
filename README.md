@@ -1,9 +1,15 @@
-# Conductor kit 1.1.0
+# Conductor kit 1.2.0
 
 Run many Claude Code sessions on one repository without losing track or shipping something
 nobody approved. You talk to one **conductor** window. It hands each change to its own **work
 session** in an isolated git worktree, and one **release manager** integrates the finished work
 and pushes it only after you approve the exact commit.
+
+New in 1.2.0: the **Approval Gate** plugin. The same promise — nothing ships until you
+approve — now also guards individual tool calls. A deterministic PreToolUse hook (regexes,
+path resolution, allow-lists; no LLM, no network) decides *allow / ask / deny* for every
+tool call, so a prompt-injected agent cannot send mail, move money, delete files or read
+credentials without you seeing the exact call first.
 
 Open `product.html` in a browser for the one-page overview.
 
@@ -13,6 +19,7 @@ Open `product.html` in a browser for the one-page overview.
 |---|---|
 | `conductor-kit` | Skills: `setup`, `conductor`, `work-session`, `release-manager`, `analyze`, `review-loop`, `handoff`. Agents: `reviewer` (read-only, top tier) and `tester`. Hooks: a database write guard, a context-threshold warning, handoff resume, and for terminal mode a session-status recorder and a tmux guard. Script: `scripts/session-manager.js` (task registry, file ownership, build lock, integration lane, tmux sessions). |
 | `conductor-board` (optional) | A live status board pane (`/board`) beside the conductor chat: what waits on you, what is running, and each task's progress, refreshed every 20 seconds with no model call. |
+| `approval-gate` (optional) | A deterministic approval gate for every tool call: a PreToolUse hook that allows safe reads silently, asks before anything irreversible (sends, payments, deletes, force pushes), and denies the worst outright (credential reads, `rm -rf /`, pipe-to-shell). Three scopes (coding / device / research), a full audit log, and a session-start baseline that detects mid-session changes to MCP and config files. See `plugins/approval-gate/README.md`. |
 
 ## Requirements
 
@@ -48,11 +55,21 @@ Optional, the board pane:
 claude plugin install conductor-board@conductor-kit
 ```
 
+Optional, the approval gate (recommended — it guards every session, not only conductor ones):
+
+```bash
+claude plugin install approval-gate@conductor-kit
+```
+
+The gate needs Python 3 on `PATH`. After installing it, add the MCP servers you actually
+use to `allowed_mcp_servers` in the gate's `scope.json` — servers not listed there are
+denied. See `plugins/approval-gate/INSTALL.md`.
+
 If you already have a local install, uninstall it first — see
 Troubleshooting, "Marketplace add fails" and "already installed".
 
 Local install (from a zip, for development only): unzip
-`conductor-kit-1.1.0.zip` anywhere you keep tools, then
+`conductor-kit-1.2.0.zip` anywhere you keep tools, then
 `claude plugin marketplace add ~/tools/conductor-kit` (use the absolute
 path of the folder you unzipped, the one that contains `.claude-plugin/`
 and `plugins/`), then install as above. Restart Claude Code, or start a
@@ -160,6 +177,35 @@ Environment overrides: `CONDUCTOR_KIT_MAIN` (main checkout path) and
   `integrate` needs both gates, a clean worktree and a real commit beyond the base.
 - **Ownership.** A task whose files overlap a live task is queued, never run in parallel.
 
+## Approval Gate (new in 1.2.0)
+
+The conductor's gates protect the *release*. The Approval Gate plugin protects every
+*tool call*, in any session, conductor or not. It exists because the realistic attack on
+a coding agent today is indirect prompt injection: a web page, file or tool result talks
+the agent into doing something irreversible — sending mail, posting, paying, deleting,
+reading credentials. The model cannot be trusted to notice; the gate does not ask it to.
+
+- **Deterministic only.** Regexes, resolved paths and allow-lists. No LLM call, no
+  network, nothing to talk the gate itself out of its decision.
+- **Three verdicts.** Safe reads and local build/test commands pass silently. Anything
+  irreversible *asks*, with the resolved target, the full arguments and the provenance
+  on the approval screen. The worst patterns (credential reads, `rm -rf /`, `sudo`,
+  pipe-to-shell, payment POSTs) are *denied* without asking.
+- **Fail closed.** Any error in the gate denies the call. Unknown tools ask; unknown
+  MCP servers are denied. A hook `deny` holds even under
+  `--dangerously-skip-permissions`.
+- **Scopes.** `coding` (default), `device` (automation asks for everything, shell
+  heavily restricted) and `research` (read-only web, no MCP servers). Switch with one
+  line in an `active-scope` file; see `plugins/approval-gate/INSTALL.md`.
+- **Audit + baseline.** Every tool call is appended to a JSONL audit log, and a
+  SessionStart hook hashes your MCP and config files; if one changes mid-session, the
+  next call stops and asks (rug-pull detection).
+
+Honest limits: the gate cannot see recipients a compromised server adds on its own
+side (for example a BCC added at send time) — the scope allow-list of which MCP servers
+may run at all is the defense there. And it cannot stop an agent from *misjudging*
+poisoned content it has read; it only controls the actions that content tries to cause.
+
 ## Files the kit keeps
 
 All under `.conductor/` in the main checkout (git-ignored): `config.json`, `USER.md` (your working
@@ -188,6 +234,10 @@ node plugins/conductor-kit/tests/test_tmux_mode.js
 
 ```bash
 claude plugin test plugins/conductor-board
+```
+
+```bash
+python3 plugins/approval-gate/tests/run_tests.py
 ```
 
 The session-manager tests create throwaway git repositories in your temp folder; they never touch
@@ -253,6 +303,10 @@ your projects. The tmux tests use a private tmux server that they shut down at t
 
 ```bash
 claude plugin uninstall conductor-board@conductor-kit
+```
+
+```bash
+claude plugin uninstall approval-gate@conductor-kit
 ```
 
 ```bash

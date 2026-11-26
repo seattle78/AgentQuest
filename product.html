@@ -63,7 +63,7 @@
 </head>
 <body>
 <main>
-  <div class="eyebrow">Conductor Kit · 1.1.0 · Claude Code plugin</div>
+  <div class="eyebrow">Conductor Kit · 1.2.0 · Claude Code plugin</div>
   <h1>One window to talk to. Many sessions doing the work.</h1>
   <p class="lede">You talk to a conductor. It hands each change to its own work session in an
   isolated git worktree, keeps a board of what is running and what waits on you, and lets one
@@ -104,6 +104,7 @@
     <tr><td>Hooks</td><td>Database write guard, context-threshold warning, handoff resume.</td></tr>
     <tr><td><code>session-manager.js</code></td><td>Task registry, file ownership, build lock, integrate, combined check, release-ready, push-approved, finalize.</td></tr>
     <tr><td><code>conductor-board</code> (optional)</td><td>A live <code>/board</code> pane, refreshed every 20 s with no model call. English or Korean labels.</td></tr>
+    <tr><td><code>approval-gate</code> (optional, new in 1.2.0)</td><td>A deterministic gate on every tool call: safe reads pass silently, irreversible actions (sends, payments, deletes) ask first, the worst are denied outright. No LLM, no network — a prompt-injected agent cannot talk its way past it.</td></tr>
   </table>
   </div>
 
@@ -115,15 +116,17 @@
     <li><strong>Every database write needs your approval</strong>, through a guard you can extend with your own patterns.</li>
     <li><strong>No typing on your behalf.</strong> In tmux, messages to a session go through a file inbox; only a fixed "read your inbox" line is typed, and only while that session is idle at its prompt.</li>
     <li><strong>Two review rounds at most.</strong> A serious finding left after round 2 comes to you instead of looping.</li>
+    <li><strong>Every tool call gated (with the approval-gate plugin).</strong> Sends, payments and deletes ask first with the full call shown; credential reads and pipe-to-shell are denied outright — even under <code>--dangerously-skip-permissions</code>.</li>
   </ul>
 
   <h2>Install</h2>
   <ol class="install">
-    <li>Unzip <code>conductor-kit-1.1.0.zip</code>, for example to <code>~/tools/conductor-kit</code>.</li>
+    <li>Unzip <code>conductor-kit-1.2.0.zip</code>, for example to <code>~/tools/conductor-kit</code>.</li>
     <li>Add the marketplace and install:
       <pre><code>claude plugin marketplace add ~/tools/conductor-kit
 claude plugin install conductor-kit@conductor-kit
-claude plugin install conductor-board@conductor-kit   # optional board pane</code></pre></li>
+claude plugin install conductor-board@conductor-kit   # optional board pane
+claude plugin install approval-gate@conductor-kit     # optional approval gate (Python 3)</code></pre></li>
     <li>In your repository, start Claude Code and run <code>/conductor-kit:setup</code>, then <code>/conductor-kit:conductor</code>. For terminal mode, start <code>tmux</code> first, then <code>claude</code> inside it.</li>
   </ol>
   <p class="muted">Needs Claude Code with plugin support, Node.js 18+ and git. Multiple sessions run in the Claude desktop app's Code tab, or in a terminal with tmux 3.x, where each work session opens as a tmux window (<code>Ctrl-b w</code> to switch). With neither, the conductor writes a brief for you to paste into a new terminal. Full details: <code>README.md</code>.</p>
@@ -140,7 +143,7 @@ claude plugin install conductor-board@conductor-kit   # optional board pane</cod
   "user_name": "you"
 }</code></pre>
 
-  <footer>Conductor Kit 1.1.0. No license chosen yet; ask the person who gave you this kit before redistributing it.</footer>
+  <footer>Conductor Kit 1.2.0. Licensed under the Apache License, Version 2.0 — see LICENSE.</footer>
 </main>
 </body>
 </html>
